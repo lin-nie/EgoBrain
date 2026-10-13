@@ -561,6 +561,15 @@ pre .k{color:#FF9C85}.pre .s,pre .s{color:#9FE0C0}pre .c{color:#7E82A8}
 .qs-note code{font-family:var(--mono);font-size:13px;background:var(--bg2);padding:1px 6px;border-radius:6px}
 .qs-cta{display:flex;flex-wrap:wrap;gap:10px}
 @media (max-width:980px){.qs{grid-template-columns:minmax(0,1fr)}}
+/* scalp map under the quick-start clip */
+.qs-brain{display:grid;grid-template-columns:200px minmax(0,1fr);gap:18px;align-items:center;margin-top:14px;border-top:1px solid var(--line);padding-top:14px}
+.qs-brain-stage{height:200px}
+.bv-topo{width:100%;height:100%;display:block}
+.qs-brain-t{margin:0 0 8px;font-weight:700;font-size:14px;color:var(--ink)}
+.qs-brain-key{display:flex;align-items:center;gap:8px;margin-top:12px;font-size:12px;color:var(--ink2)}
+.qs-brain-key i{width:120px;height:8px;border-radius:4px;background:linear-gradient(90deg,#F6F4FC,#FFC4AA,#FF5B3A,#782250)}
+.qs-brain-note{margin:8px 0 0;font-size:12.5px;line-height:1.5;color:var(--ink3)}
+@media (max-width:520px){.qs-brain{grid-template-columns:150px minmax(0,1fr);gap:12px}.qs-brain-stage{height:150px}.qs-brain .pill{padding:6px 12px;font-size:13px}.qs-brain .bn{display:none}}
 @media (max-width:760px){.qs-act{font-size:13.5px;padding:8px 12px}#qsCanvas{height:130px}.qs-side .code-card pre{font-size:11.5px}}
 
 /* phones: dot plots and the token diagram keep their full-size text and scroll sideways instead of shrinking */

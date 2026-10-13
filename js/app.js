@@ -268,6 +268,19 @@
     const acts = $('#qsActs'), video = $('#qsVideo'), cv = $('#qsCanvas'), tag = $('#qsTag'), tdisp = $('#qsTime'), codeEl = $('#qsCode code');
     const SHOW = ['Fz', 'Cz', 'Pz', 'Oz'];
     let cur = null, J = null, trace = null, inView = false, raf = 0;
+    // scalp map (js/brain.js) loads the first time the section is on screen
+    let B = null, bP = null;
+    const ensureBrain = () => {
+      const box = $('#qsBrainStage'); if (bP || !box) return;
+      bP = import('./brain.js').then(m => {
+        B = m.create(box); const on = $('#qsBand .pill.on'); if (on) B.band(on.dataset.b);
+        if (cur && J) B.load(cur.id, J); draw();
+      }).catch(e => { console.warn(e); $('#qsBrain').hidden = true; });
+    };
+    $('#qsBand') && $('#qsBand').addEventListener('click', e => {
+      const p = e.target.closest('.pill'); if (!p) return;
+      $$('#qsBand .pill').forEach(x => x.classList.toggle('on', x === p)); B && B.band(p.dataset.b);
+    });
     const esc = t => String(t).replace(/[&<>"]/g, ch => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[ch]));
     const code = c => {
       const seg = `${c.subject}/segments/phase2/${c.id}`;
@@ -309,6 +322,7 @@ print(meta[<span class="s">"action"</span>], eeg.shape)`;
       ctx.fillStyle = 'rgba(30,33,66,.06)'; ctx.fillRect(G, 0, px - G, h);
       ctx.strokeStyle = INK; ctx.lineWidth = 1.5; ctx.beginPath(); ctx.moveTo(px, 0); ctx.lineTo(px, h); ctx.stroke();
       tdisp.textContent = t.toFixed(1) + ' s';
+      B && B.time(t);
     }
     const loop = () => { draw(); raf = (inView && !video.paused) ? requestAnimationFrame(loop) : 0; };
     const kick = () => { if (!raf) raf = requestAnimationFrame(loop); };
@@ -319,7 +333,8 @@ print(meta[<span class="s">"action"</span>], eeg.shape)`;
       codeEl.innerHTML = code(c);
       video.poster = SH + 'clips/' + c.id + '.jpg'; vidSources(video, SH + 'clips/' + c.id); video.load();
       if (inView) video.play().catch(() => {});
-      const j = await getClip(c.id); if (cur !== c) return; J = j; trace = null; draw();
+      const j = await getClip(c.id); if (cur !== c) return; J = j; trace = null;
+      B && B.load(c.id, J); draw();
     }
     clipsReady.then(cs => {
       acts.innerHTML = cs.map(c => `<button class="qs-act" role="tab" data-id="${c.id}" aria-selected="false">${esc(title(c.action))}</button>`).join('');
@@ -327,7 +342,7 @@ print(meta[<span class="s">"action"</span>], eeg.shape)`;
       pick(CLIP_BY_ID['P0024_phase2_008_eat-snack-c'] || cs[0]);
     }).catch(() => {});
     video.addEventListener('play', kick); video.addEventListener('seeked', kick); video.addEventListener('loadeddata', kick);
-    new IntersectionObserver(es => { inView = es[0].isIntersecting; if (inView) { video.play().catch(() => {}); kick(); } else video.pause(); }, { threshold: .25 }).observe(sec);
+    new IntersectionObserver(es => { inView = es[0].isIntersecting; if (inView) { ensureBrain(); video.play().catch(() => {}); kick(); } else video.pause(); }, { threshold: .25 }).observe(sec);
     addEventListener('resize', () => { trace = null; draw(); });
     window.__qs = { video, ready: () => !!J, playheadX: () => (video.currentTime / ((cur && cur.clip_len) || 24)), id: () => cur && cur.id };
   })();

@@ -78,6 +78,15 @@
         <div class="qs-vid"><video id="qsVideo" muted playsinline loop preload="metadata"></video><span class="qs-tag" id="qsTag">—</span></div>
         <canvas id="qsCanvas" aria-label="EEG and IMU traces for the selected clip, with a playhead that follows the video"></canvas>
         <p class="qs-legend"><span class="lg-eeg">EEG · 4 of 32 channels</span><span class="lg-imu">IMU · right-wrist acceleration</span><span id="qsTime">0.0 s</span></p>
+        <div class="qs-brain" id="qsBrain">
+          <div class="qs-brain-stage" id="qsBrainStage"></div>
+          <div class="qs-brain-side">
+            <p class="qs-brain-t">Scalp map</p>
+            <div class="pills" id="qsBand" aria-label="EEG band"><button class="pill" data-b="theta" aria-label="theta">θ<span class="bn"> theta</span></button><button class="pill on" data-b="alpha" aria-label="alpha">α<span class="bn"> alpha</span></button><button class="pill" data-b="beta" aria-label="beta">β<span class="bn"> beta</span></button></div>
+            <div class="qs-brain-key"><span>low</span><i></i><span>high</span></div>
+            <p class="qs-brain-note">Band power at the 32 electrodes, compared with each other at every moment and interpolated over the head (nose up). It follows the video, four updates a second.</p>
+          </div>
+        </div>
       </div>
     </div>
     <div class="qs-side">
