@@ -180,6 +180,25 @@
       });
     }
   }
+  // hero type: the subtitle's longer line ends where logo + name end, and the bold TL;DR sentence stays on one line
+  // when a slightly smaller size allows it (otherwise it wraps as before)
+  function fitHero() {
+    const name = $('.h1-name'), sub = $('.h1-sub'), tl = $('#tldr'), st = tl && $('strong', tl);
+    const width = el => { const r = document.createRange(); r.selectNodeContents(el); return r.getBoundingClientRect().width; };
+    if (name && sub) {
+      sub.style.fontSize = '';
+      const w = width(name), longest = Math.max(...$$(':scope > span', sub).map(width));
+      if (w && longest) sub.style.fontSize = (parseFloat(getComputedStyle(sub).fontSize) * w / longest).toFixed(2) + 'px';
+    }
+    if (st) {
+      tl.style.fontSize = '';
+      const base = parseFloat(getComputedStyle(tl).fontSize);
+      for (let fs = base; fs >= 13; fs -= .25) { tl.style.fontSize = fs + 'px'; if (st.getClientRects().length === 1) return; }
+      tl.style.fontSize = '';
+    }
+  }
+  fitHero(); document.fonts && document.fonts.ready.then(fitHero); addEventListener('resize', fitHero);
+
   let lab = null;
   try {
     lab = window.ISO.buildLab($('#lab'), {

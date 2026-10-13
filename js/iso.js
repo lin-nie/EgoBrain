@@ -121,19 +121,11 @@
     water: { label: 'Water bottle', c: [134, 104, 102] },
     juice: { label: 'Bitter gourd juice', c: [154, 86, 94] },
   };
-  // the main recording table (P0001–P0034) is round dark wood on one pedestal; each object keeps its drawing and is
-  // slid toward the table centre by SHIFT (world units), its hotspot pin moves with it
-  const TBL = { x: 227, y: 98, r: 130 }, SEAT = 14;  // SEAT: the participant sits this much further back than at the old desk
-  const SHIFT = { books: [16, 7], cola: [14, 2], water: [14, 2], juice: [14, 2], laptop: [3, 5], clock: [-5, 8], puzzle: [-13, 6],
-    notebook: [4, -4], phone: [-2, -4], cards: [-6, -5], cube: [-12, -2], toys: [-16, 0], snacks: [-13, -7], plant: [17, -7] };
   const PROMPTS = ['Play Cube', 'Read Book', 'Eat Snack', 'Write Notes', 'Drink Cola', 'Play Cards', 'Play Puzzle', 'Draw Pictures', 'Operate Word', 'Watch Phone'];
 
   function deskItems() {
     const it = [];
-    const add = (key, depth, svg, name = key) => {
-      const off = SHIFT[name] || [0, 0], o = P(0, 0, 0), q = P(off[0], off[1], 0);
-      it.push({ key, depth, off, svg: `<g transform="translate(${f(q[0] - o[0])},${f(q[1] - o[1])})">${svg}</g>` });
-    };
+    const add = (key, depth, svg) => it.push({ key, depth, svg });
     // books (stack)
     add('books', 100, bshadow(104, 40, DZ, 40, 34, 16) +
       box(104, 42, DZ, 38, 30, 6, '#7FA6D8', { r: 1.5 }) +
@@ -162,7 +154,7 @@
       `<path d="${(() => { const a = P(254, 73, DZ + 3.5), b = P(254, 78, DZ + 3.5); return `M${f(a[0])},${f(a[1])}L${f(b[0])},${f(b[1])}`; })()}" stroke="#7FB3A2" stroke-width=".8"/>`);
     // flip clock (decor)
     add('', 250, bshadow(252, 44, DZ, 22, 10, 14) + box(252, 44, DZ, 22, 10, 13, '#3A3E63', { r: 1 }) +
-      `<g transform="${planeY(54)}"><rect x="254" y="${-DZ - 11}" width="18" height="9" rx="1.2" fill="#22253F"/><text x="263" y="${-DZ - 4}" font-family="DM Mono,monospace" font-size="6.4" fill="#FFE7A3" text-anchor="middle">16:38</text></g>`, 'clock');
+      `<g transform="${planeY(54)}"><rect x="254" y="${-DZ - 11}" width="18" height="9" rx="1.2" fill="#22253F"/><text x="263" y="${-DZ - 4}" font-family="DM Mono,monospace" font-size="6.4" fill="#FFE7A3" text-anchor="middle">16:38</text></g>`);
     // puzzle
     add('puzzle', 330, bshadow(282, 42, DZ, 60, 42, 2) + box(282, 42, DZ, 60, 42, 2, '#E7D3A8', { r: 1.5 }) +
       `<g transform="${topM(DZ + 2)}"><rect x="285" y="45" width="54" height="36" rx="1" fill="#F6E7C3"/><g fill="none" stroke="#D8BE8A" stroke-width=".9"><path d="M285 57h8a3 3 0 1 1 6 0h10a3 3 0 1 0 6 0h24M285 69h12a3 3 0 1 0 6 0h12a3 3 0 1 1 6 0h18M298 45v6a3 3 0 1 1 0 6v24M312 45v8a3 3 0 1 0 0 6v22M326 45v4a3 3 0 1 1 0 6v26"/></g><path d="M287 47h22v10h-22z" fill="#9ED2E8" opacity=".9"/><path d="M313 59h14v10h-14z" fill="#F4A3A8" opacity=".9"/><path d="M299 71h14v8h-14z" fill="#A6D89A" opacity=".9"/><path d="M327 71h12v9h-12z" fill="#C8B5F0"/></g>` +
@@ -215,7 +207,7 @@
     }
     // succulent (decor)
     add('', 260, cshadow(116, 150, DZ, 7, 10) + cyl(116, 150, DZ, 7, 9, '#F3A68A', { top: '#8A6A55' }) +
-      [[-6, '#7BC49A'], [6, '#6AB58A'], [0, '#8ED1A8']].map(([d, c], i) => { const a = P(116, 150, DZ + 9), b = P(116 + d * .7, 150 - d * .7, DZ + 22 - Math.abs(d) * .4); return `<ellipse cx="${f((a[0] + b[0]) / 2)}" cy="${f((a[1] + b[1]) / 2)}" rx="4" ry="9" transform="rotate(${d * 3} ${f((a[0] + b[0]) / 2)} ${f((a[1] + b[1]) / 2)})" fill="${c}"/>`; }).join(''), 'plant');
+      [[-6, '#7BC49A'], [6, '#6AB58A'], [0, '#8ED1A8']].map(([d, c], i) => { const a = P(116, 150, DZ + 9), b = P(116 + d * .7, 150 - d * .7, DZ + 22 - Math.abs(d) * .4); return `<ellipse cx="${f((a[0] + b[0]) / 2)}" cy="${f((a[1] + b[1]) / 2)}" rx="4" ry="9" transform="rotate(${d * 3} ${f((a[0] + b[0]) / 2)} ${f((a[1] + b[1]) / 2)})" fill="${c}"/>`; }).join(''));
     return it;
   }
 
@@ -314,7 +306,7 @@
     s += box(0, 0, -16, RW, RW, 16, '#F2E4D0', { top: '#F6EBDD', left: '#E6D2B8', right: '#D7BF9F', edgeC: '#fff' });
     s += `<g transform="${topM(0)}" stroke="#EADBC6" stroke-width="1.1">${[50, 100, 150, 200, 250, 300, 350].map(v => `<path d="M${v} 0V${RW}M0 ${v}H${RW}"/>`).join('')}</g>`;
     // rug
-    s += `<g transform="${topM(.3)}"><rect x="150" y="186" width="150" height="120" rx="30" fill="#D6D4DE"/><rect x="160" y="196" width="130" height="100" rx="24" fill="none" stroke="#C2BFCD" stroke-width="3" stroke-dasharray="2 7" stroke-linecap="round"/></g>`;
+    s += `<g transform="${topM(.3)}"><rect x="150" y="186" width="150" height="120" rx="30" fill="#CFEADB"/><rect x="160" y="196" width="130" height="100" rx="24" fill="none" stroke="#B5DDC8" stroke-width="3" stroke-dasharray="2 7" stroke-linecap="round"/></g>`;
     // walls (left = x<0, right = y<0)
     s += box(-14, -14, 0, 14, RW + 14, WH, '#D9D1EC', { left: '#E8E2F4', right: '#CFC6E6', top: '#F3F0FA' });
     s += box(-14, -14, 0, RW + 14, 14, WH, '#E3DCF3', { left: '#E3DCF3', right: '#D3CAE8', top: '#F3F0FA' });
@@ -335,22 +327,23 @@
     // desk + participant, nudged toward the room centre
     const [ox, oy] = P(14, 46, 0);
     s += `<g transform="translate(${f(ox)},${f(oy)})">`;
-    const top = ell(TBL.x, TBL.y, TBL.r, TBL.r, 72);
-    s += shadow(top, 0, 30, { a: .055, k: .7 });
-    s += cyl(TBL.x, TBL.y, 0, 44, 2.4, '#4E3A2E', { edge: false }) + cyl(TBL.x, TBL.y, 2.4, 7, DZ - 9.4, '#5E4636', { edge: false });
-    // person back layer (chair base, legs, far arm) is drawn below the table top
+    const D = { x: 100, y: 34, w: 252, d: 138 };
+    s += shadow(rr(D.x, D.y, D.w, D.d), 0, 70, { a: .07, k: .7 });
+    const leg = (x, y) => box(x, y, 0, 7, 7, DZ - 7, '#D9A97C', { r: 2 });
+    s += leg(D.x + 6, D.y + 6) + leg(D.x + D.w - 13, D.y + 6) + leg(D.x + 6, D.y + D.d - 13);
+    // person back layer (chair base, legs, far arm) is drawn below the desk front leg
     const per = personSVG();
-    { const a = P(0, 0, 0), b = P(0, SEAT, 0), mv = t => `<g transform="translate(${f(b[0] - a[0])},${f(b[1] - a[1])})">${t}</g>`;
-      ['under', 'back', 'mid', 'front'].forEach(k => { per[k] = mv(per[k]); }); per.cam[1] += SEAT; }
+    s += box(D.x + 6, D.y + 6, DZ - 26, D.w - 12, 4, 18, '#E7BE93');
     s += per.under;
-    s += prism(top, DZ - 7, 7, '#6E5140', { top: '#7D5E49', left: '#6A4E3D', right: '#4F3A2D', edgeC: 'rgba(255,236,214,.35)' });
+    s += leg(D.x + D.w - 13, D.y + D.d - 13);
+    s += prism(rr(D.x, D.y, D.w, D.d, 6), DZ - 7, 7, '#EBC39C', { top: '#F5D7B5', left: '#E0AE80', right: '#C99467', soft: false });
     // desk items (sorted)
     const items = deskItems().sort((a, b) => a.depth - b.depth);
     let pins = '';
-    let it = `<clipPath id="deskTop"><polygon points="${P3(ell(TBL.x, TBL.y, TBL.r, TBL.r, 72).map(q => [q[0], q[1], DZ]))}"/></clipPath>`;
+    let it = `<clipPath id="deskTop"><polygon points="${P3(rr(D.x, D.y, D.w, D.d, 6).map(q => [q[0], q[1], DZ]))}"/></clipPath>`;
     items.forEach(o => {
       if (!o.key) { it += `<g>${o.svg}</g>`; return; }
-      const hc = HOT[o.key], [rx, ry] = P(hc.c[0] + o.off[0], hc.c[1] + o.off[1], hc.c[2]);
+      const hc = HOT[o.key], [rx, ry] = P(...hc.c);
       it += `<g class="hot" data-obj="${o.key}" tabindex="0" role="button" aria-label="${hc.label}: see the actions that use it">${o.svg}</g>`;
       pins += `<g class="pin" data-pin="${o.key}"><circle class="ring" cx="${f(rx)}" cy="${f(ry - 10)}" r="6"/><circle cx="${f(rx)}" cy="${f(ry - 10)}" r="2.8" fill="${ACC}" stroke="#fff" stroke-width="1.3"/></g>`;
     });
