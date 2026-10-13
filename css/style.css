@@ -444,6 +444,7 @@ pre .k{color:#FF9C85}.pre .s,pre .s{color:#9FE0C0}pre .c{color:#7E82A8}
 .foot p{max-width:720px;margin:8px auto}
 .foot a{color:var(--ink);text-decoration:underline;text-decoration-color:rgba(30,33,66,.28);text-underline-offset:3px;transition:text-decoration-color .2s}
 .foot a:hover{text-decoration-color:var(--accent)}
+.foot-line{display:block}
 .foot-credit{margin-top:18px!important;font-size:13px;color:var(--ink3)}
 .foot b{color:var(--ink)}
 .foot-iso{width:90px;height:auto;display:block;margin:0 auto 12px}

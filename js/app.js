@@ -260,4 +260,75 @@
   $$('.fig-btn').forEach(b => b.onclick = () => { $('img', lb).src = b.dataset.lb; $('img', lb).alt = b.dataset.cap; $('figcaption', lb).textContent = b.dataset.cap; lb.hidden = false; });
   lb.onclick = () => (lb.hidden = true);
 
+  /* =========================================================
+     EgoBrain-Mini IN 30 SECONDS: pick an action -> real clip + EEG/IMU on one clock -> code for that segment
+     ========================================================= */
+  (function quickStart() {
+    const sec = $('#quick'); if (!sec) return;
+    const acts = $('#qsActs'), video = $('#qsVideo'), cv = $('#qsCanvas'), tag = $('#qsTag'), tdisp = $('#qsTime'), codeEl = $('#qsCode code');
+    const SHOW = ['Fz', 'Cz', 'Pz', 'Oz'];
+    let cur = null, J = null, trace = null, inView = false, raf = 0;
+    const esc = t => String(t).replace(/[&<>"]/g, ch => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[ch]));
+    const code = c => {
+      const seg = `${c.subject}/segments/phase2/${c.id}`;
+      return `<span class="k">from</span> huggingface_hub <span class="k">import</span> snapshot_download
+<span class="k">import</span> json, numpy <span class="k">as</span> np, pandas <span class="k">as</span> pd
+
+seg = <span class="s">"${esc(seg)}"</span>
+root = snapshot_download(
+    <span class="s">"ut-vision/EgoBrain-Mini"</span>, repo_type=<span class="s">"dataset"</span>,
+    allow_patterns=<span class="s">f"{seg}/*"</span>)  <span class="c"># this segment only</span>
+
+meta = json.load(open(<span class="s">f"{root}/{seg}/meta.json"</span>))
+eeg = np.load(<span class="s">f"{root}/{seg}/eeg/clean.npy"</span>)  <span class="c"># (32, T), 200 Hz</span>
+imu = pd.read_parquet(<span class="s">f"{root}/{seg}/imu/imu.parquet"</span>)
+print(meta[<span class="s">"action"</span>], eeg.shape)`;
+    };
+    // static traces are drawn once per clip/size; the playhead is drawn on top every frame
+    function buildTrace() {
+      const { w, h } = fitCanvas(cv); if (!J) { trace = null; return; }
+      const off = document.createElement('canvas'), d = Math.min(2, devicePixelRatio || 1);
+      off.width = w * d; off.height = h * d; const x = off.getContext('2d'); x.setTransform(d, 0, 0, d, 0, 0);
+      const n = J.eeg.data[0].length, rows = SHOW.length + 1, lh = h / rows, G = 30, X = i => G + i / (n - 1) * (w - G);
+      const line = (arr, y0, col, lw) => {
+        const s = [...arr].sort((a, b) => a - b), lo = s[Math.floor(s.length * .02)], hi = s[Math.floor(s.length * .98)], sc = (lh * .8) / ((hi - lo) || 1);
+        x.beginPath(); arr.forEach((v, i) => { const y = y0 + lh / 2 - (Math.max(lo, Math.min(hi, v)) - (lo + hi) / 2) * sc; i ? x.lineTo(X(i), y) : x.moveTo(X(i), y); });
+        x.strokeStyle = col; x.lineWidth = lw; x.stroke();
+      };
+      x.font = '600 11px ' + getComputedStyle(document.body).fontFamily; x.textBaseline = 'middle';
+      SHOW.forEach((ch, r) => { const k = J.eeg.channels.findIndex(c => c === ch); if (k < 0) return; line(J.eeg.data[k], r * lh, ACC, 1.2); x.fillStyle = '#8A8DAD'; x.fillText(ch, 2, r * lh + lh / 2); });
+      const a = J.imu.imu_3 && J.imu.imu_3.acc;
+      if (a) { line(a[0].map((_, i) => Math.hypot(a[0][i], a[1][i], a[2][i])), SHOW.length * lh, '#4FB6CF', 1.6); x.fillStyle = '#8A8DAD'; x.fillText('IMU', 2, SHOW.length * lh + lh / 2); }
+      trace = off;
+    }
+    function draw() {
+      const { ctx, w, h } = fitCanvas(cv);
+      if (!trace || trace.width !== cv.width) buildTrace();
+      ctx.clearRect(0, 0, w, h); if (trace) ctx.drawImage(trace, 0, 0, w, h);
+      const t = video.currentTime || 0, L = (cur && cur.clip_len) || 24, G = 30, px = G + t / L * (w - G);
+      ctx.fillStyle = 'rgba(30,33,66,.06)'; ctx.fillRect(G, 0, px - G, h);
+      ctx.strokeStyle = INK; ctx.lineWidth = 1.5; ctx.beginPath(); ctx.moveTo(px, 0); ctx.lineTo(px, h); ctx.stroke();
+      tdisp.textContent = t.toFixed(1) + ' s';
+    }
+    const loop = () => { draw(); raf = (inView && !video.paused) ? requestAnimationFrame(loop) : 0; };
+    const kick = () => { if (!raf) raf = requestAnimationFrame(loop); };
+    async function pick(c) {
+      cur = c; J = null; trace = null;
+      $$('.qs-act', acts).forEach(b => b.setAttribute('aria-selected', String(b.dataset.id === c.id)));
+      tag.textContent = `${c.subject} · ${title(c.action)}`;
+      codeEl.innerHTML = code(c);
+      video.poster = SH + 'clips/' + c.id + '.jpg'; vidSources(video, SH + 'clips/' + c.id); video.load();
+      if (inView) video.play().catch(() => {});
+      const j = await getClip(c.id); if (cur !== c) return; J = j; trace = null; draw();
+    }
+    clipsReady.then(cs => {
+      acts.innerHTML = cs.map(c => `<button class="qs-act" role="tab" data-id="${c.id}" aria-selected="false">${esc(title(c.action))}</button>`).join('');
+      acts.onclick = e => { const b = e.target.closest('.qs-act'); if (b) pick(CLIP_BY_ID[b.dataset.id]); };
+      pick(CLIP_BY_ID['P0024_phase2_008_eat-snack-c'] || cs[0]);
+    }).catch(() => {});
+    video.addEventListener('play', kick); video.addEventListener('seeked', kick); video.addEventListener('loadeddata', kick);
+    new IntersectionObserver(es => { inView = es[0].isIntersecting; if (inView) { video.play().catch(() => {}); kick(); } else video.pause(); }, { threshold: .25 }).observe(sec);
+    addEventListener('resize', () => { trace = null; draw(); });
+    window.__qs = { video, ready: () => !!J, playheadX: () => (video.currentTime / ((cur && cur.clip_len) || 24)), id: () => cur && cur.id };
+  })();
 })();
