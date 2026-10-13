@@ -411,16 +411,19 @@
       const m = svg.getScreenCTM(); if (!coarse.matches || !m) return;
       const inv = m.inverse(), k = Math.hypot(m.a, m.b), min = 32 / k;
       const layer = document.createElementNS(NS, 'g'); layer.id = 'hitLayer';
+      const rects = [];
       svg.querySelectorAll('.hot, .hot-person').forEach(g => {
         const r = g.getBoundingClientRect();
         const p0 = new DOMPoint(r.left, r.top).matrixTransform(inv), p1 = new DOMPoint(r.right, r.bottom).matrixTransform(inv);
         const bw = p1.x - p0.x, bh = p1.y - p0.y, w = Math.max(bw, min), h = Math.max(bh, min);
         const t = document.createElementNS(NS, 'rect');
-        t.setAttribute('class', 'hit'); t.setAttribute('fill', 'rgba(0,0,0,0)');
+        t.setAttribute('class', 'hit'); t.setAttribute('fill', 'rgba(0,0,0,0)'); t.setAttribute('data-for', g.dataset.obj || g.dataset.hot);
         t.setAttribute('x', f(p0.x + bw / 2 - w / 2)); t.setAttribute('y', f(p0.y + bh / 2 - h / 2)); t.setAttribute('width', f(w)); t.setAttribute('height', f(h));
         t.addEventListener('click', e => { e.stopPropagation(); g.dispatchEvent(new MouseEvent('click', { bubbles: true, clientX: e.clientX, clientY: e.clientY })); });
-        layer.appendChild(t);
+        rects.push([w * h, t]);
       });
+      // where boxes overlap the smaller one wins (drawn last), so a big box like the head's cannot swallow a wrist band
+      rects.sort((a, b) => b[0] - a[0]).forEach(([, t]) => layer.appendChild(t));
       svg.insertBefore(layer, svg.querySelector(':scope > :not(defs)'));
     };
     hits(); addEventListener('resize', hits); coarse.addEventListener('change', hits);
