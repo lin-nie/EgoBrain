@@ -293,7 +293,8 @@ root = snapshot_download(
     allow_patterns=<span class="s">f"{seg}/*"</span>)  <span class="c"># this segment only</span>
 
 meta = json.load(open(<span class="s">f"{root}/{seg}/meta.json"</span>))
-eeg = np.load(<span class="s">f"{root}/{seg}/eeg/clean.npy"</span>)  <span class="c"># (32, T), 200 Hz</span>
+<span class="c"># EEG: 32 channels x T samples at 200 Hz</span>
+eeg = np.load(<span class="s">f"{root}/{seg}/eeg/clean.npy"</span>)
 imu = pd.read_parquet(<span class="s">f"{root}/{seg}/imu/imu.parquet"</span>)
 print(meta[<span class="s">"action"</span>], eeg.shape)`;
     };
