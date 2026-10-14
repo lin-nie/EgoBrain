@@ -69,10 +69,12 @@
 <section class="sec quick" id="quick" aria-labelledby="quickTitle">
   <div class="sec-head"><p class="kicker">Start here</p><h2 id="quickTitle">EgoBrain-Mini in 30 seconds</h2>
     <p class="lede">Pick an action, watch the real recording with its EEG and IMU in sync, then copy the code that loads exactly that segment.</p></div>
+  <div class="qs-pick">
+    <p class="qs-n"><span>1</span>Pick an action</p>
+    <div class="qs-acts" id="qsActs" role="tablist" aria-label="Actions"></div>
+  </div>
   <div class="qs">
     <div class="qs-steps">
-      <p class="qs-n"><span>1</span>Pick an action</p>
-      <div class="qs-acts" id="qsActs" role="tablist" aria-label="Actions"></div>
       <p class="qs-n"><span>2</span>See it: video, EEG and IMU on one clock</p>
       <div class="card qs-view">
         <div class="qs-vid"><video id="qsVideo" muted playsinline loop preload="metadata"></video><span class="qs-tag" id="qsTag">—</span></div>
@@ -99,9 +101,9 @@
 ds = load_dataset(<span class="s">"ut-vision/EgoBrain-Mini"</span>, split=<span class="s">"train"</span>)
 eat = ds.filter(<span class="k">lambda</span> r: r[<span class="s">"action"</span>] == <span class="s">"Eat Snack"</span>)</code></pre>
       </div>
-      <p class="qs-note">The dataset is gated: request access on Hugging Face, then run <code>huggingface-cli login</code> once. Only the files of the chosen segment are downloaded.</p>
+      <p class="qs-note">The dataset is gated: request access on <a href="https://huggingface.co/datasets/ut-vision/EgoBrain-Mini">its Hugging Face page</a>, then run <code>huggingface-cli login</code> once. Only the files of the chosen segment are downloaded.</p>
       <div class="qs-cta">
-        <a class="btn btn-accent" href="https://huggingface.co/datasets/ut-vision/EgoBrain-Mini">Request access on Hugging Face →</a>
+        <a class="btn btn-accent" href="https://huggingface.co/datasets/ut-vision/EgoBrain-Mini"><img class="hf" src="img/hf-logo.svg" alt="" width="20" height="19">EgoBrain-Mini on Hugging Face →</a>
         <a class="btn" href="https://huggingface.co/datasets/ut-vision/EgoBrain-Mini">Browse all 1,562 segments</a>
       </div>
     </div>
