@@ -338,7 +338,24 @@ print(meta[<span class="s">"action"</span>], eeg.shape)`;
       B && B.load(c.id, J); draw();
     }
     clipsReady.then(cs => {
-      acts.innerHTML = cs.map(c => `<button class="qs-act" role="tab" data-id="${c.id}" aria-selected="false">${esc(title(c.action))}</button>`).join('');
+      // one row per kind of action, the verb said once at the start of the row
+      const GROUPS = [
+        ['Drink', [['Drink Coca-cola', 'Coca-Cola'], ['Drink Water', 'Water'], ['Drink Bitter Gourd Juice', 'Bitter Gourd Juice']]],
+        ['Eat', [['Eat Snack', 'Snack'], ['Eat Sugers', 'Sugars'], ['Eat Spicy strips', 'Spicy Strips']]],
+        ['Read', [['Read Comic-book', 'Comic Book'], ['Read Textbook', 'Textbook'], ['Read Research Article', 'Research Article']]],
+        ['Write & draw', [['Write Notes', 'Notes'], ['Write Copybook', 'Copybook'], ['Draw Pictures', 'Pictures'], ['Draw Picture Tracing', 'Picture Tracing']]],
+        ['Computer', [['Operate Computer (Word)', 'Word'], ['Operate Computer (Excel)', 'Excel'], ['Operate Computer (PowerPoint)', 'PowerPoint'], ['Operate Computer (Paint)', 'Paint'], ['Watch Computer (Web & Video)', 'Web & Video']]],
+        ['Games', [['Play_I Computer game (Mouse)', 'Computer · Mouse'], ['Play_I Computer game (Keyboard)', 'Computer · Keyboard'], ['Play_III Phone game (Simple)', 'Phone · Simple'], ['Play_III Phone game (Complex)', 'Phone · Complex']]],
+        ['Hands-on play', [['Play_II Cube', 'Cube'], ['Play_II Cards', 'Cards'], ['Play_II Puzzle', 'Puzzle'], ['Play_II Toys', 'Toys']]],
+      ];
+      const btn = (c, label) => `<button class="qs-act" role="tab" data-id="${c.id}" aria-selected="false" title="${esc(title(c.action))}">${esc(label)}</button>`;
+      const seen = new Set(), rows = GROUPS.map(([g, items]) => {
+        const bs = items.filter(([a]) => CLIP_BY_LABEL[a]).map(([a, l]) => { seen.add(a); return btn(CLIP_BY_LABEL[a], l); });
+        return bs.length ? `<div class="qs-grp" role="presentation"><span class="qs-grp-t">${g}</span><div class="qs-grp-p" role="presentation">${bs.join('')}</div></div>` : '';
+      });
+      const rest = cs.filter(c => !seen.has(c.action));   // a clip with no row yet still gets a button
+      if (rest.length) rows.push(`<div class="qs-grp" role="presentation"><span class="qs-grp-t">More</span><div class="qs-grp-p" role="presentation">${rest.map(c => btn(c, title(c.action))).join('')}</div></div>`);
+      acts.innerHTML = rows.join('');
       acts.onclick = e => { const b = e.target.closest('.qs-act'); if (b) pick(CLIP_BY_ID[b.dataset.id]); };
       pick(CLIP_BY_ID['P0024_phase2_008_eat-snack-c'] || cs[0]);
     }).catch(() => {});
